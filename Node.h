@@ -1,5 +1,4 @@
-#ifndef __NODE_H
-#define __NODE_H
+#pragma once
 
 #include <string>
 
@@ -22,5 +21,3 @@ private:
   // Node * or string variables.
 
 };
-
-#endif

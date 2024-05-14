@@ -1,5 +1,4 @@
-#ifndef __TREE_H
-#define __TREE_H
+#pragma once
 
 #include "Node.h"
 
@@ -21,5 +20,3 @@ private:
   // Add additional functions/variables here
     
 };
-
-#endif
