@@ -2,22 +2,26 @@
 
 #include <string>
 
-using namespace std;
+using std::string;
 
 class Node {
 
-  friend class Tree;
+    friend class Tree;
 
-private:
-  string small;
-  string large;
+    public:
+        Node(const string& value) : small(value), large(""), left(nullptr), middle(nullptr), right(nullptr), parent(nullptr){}
 
-  Node *left;
-  Node *middle;
-  Node *right;
-  Node *parent;
+    private:
+        string small;
+        string large;
 
-  // Add additional functions/variables here. Remember, you may not add any
-  // Node * or string variables.
+        Node *left;
+        Node *middle;
+        Node *right;
+        Node *parent;
+
+        // Add additional functions/variables here. Remember, you may not add any
+        // Node * or string variables.
+        
 
 };

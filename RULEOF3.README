@@ -1,0 +1,4 @@
+PlayList();
+~PlayList();
+PlayList(const PlayList&) = delete;
+PlayList& operator=(const Playlist&) = delete;
