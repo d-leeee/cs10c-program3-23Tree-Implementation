@@ -7,10 +7,10 @@ void Tree::insert(const string& value){
     //empty tree
     if (empty()){
         root = new Node(value);
+        return;
     }
 
     Node* curr = root;
-    Node* parent = nullptr;
     while (curr){
         //left child
         if (value < curr->small && curr->left){
@@ -34,32 +34,137 @@ void Tree::insert(const string& value){
             }
             //if large key is full
             string keyToMoveUp = reorderThreeKeys(curr, value); //order small, large, and new keys
-            split(curr, keyToMoveUp, nullptr, nullptr); //move keyToMoveUp to parent node and split the tree
+            split(curr, keyToMoveUp); //move keyToMoveUp to parent node and split the tree
+            return;
         }
     }
 }
 
 void Tree::remove(const string& value){
-
+    //return error if value dne
+    if (!search(value)){
+        throw runtime_error("Value does not exist.");
+    }
+    Node* curr = root;
+    while (curr){
+        //traverse left
+        if (value < curr->small){
+            curr = curr->left;
+        }
+        //traverse middle
+        else if (value < curr->large){
+            curr = curr->middle;
+        }
+        //traverse right
+        else if (value > curr->large){
+            curr = curr->right;
+        }
+        //value found
+        else {
+            //if node is full
+            if (curr->large != ""){
+                //if value is small key, delete small and reorder
+                if (value == curr->small){
+                    curr->small = "";
+                    reorderTwoKeys(curr);
+                }
+                //if value is large key, just remove large key
+                else if (value == curr->large){
+                    curr->large = "";
+                }
+                return;
+            }
+            //if node is empty
+            Node* deleteNode = curr;
+            //if value is at root node
+            if (value == root->small){
+                root = nullptr;
+            }
+            //if value is a right child and left sibling exists
+            else if (curr->small > curr->parent->small && curr->parent->left){
+                //if parent is not full, move sibling to parent
+                if (curr->parent->large == ""){
+                    curr->parent->large = curr->parent->left->small;
+                    delete curr->parent->left;
+                    //reorder parent
+                    reorderTwoKeys(curr);
+                }
+            }
+            //if value is a left child and right sibling exists
+            else if (curr->small < curr->parent->small && curr->parent->right){
+                //if parent is not full, move sibling to parent
+                if (curr->parent->large == ""){
+                    curr->parent->large = curr->parent->right->small;
+                    delete curr->parent->right;
+                    //reorder parent
+                    reorderTwoKeys(curr);
+                }
+            }
+            //delete the value
+            delete deleteNode;
+            return;
+        }
+    }
 }
 
 bool Tree::search(const string& value) const {
-
+    return true;
 }
 
 void Tree::preOrder(Node* node) const {
+    if (!node){
+        return;
+    }
+
+    cout << node->small << ", ";
+
+    preOrder(node->left);
+    preOrder(node->middle);
+    preOrder(node->right);
+
+    if (node->large != ""){
+        cout << node->large << ", ";
+    }
 }
 
 void Tree::inOrder(Node* node) const {
-    
+    if (!node){
+        return;
+    }
+
+    inOrder(node->left);
+
+    cout << node->small << ", ";
+
+    inOrder(node->middle);
+
+    if (node->large != ""){
+        cout << node->large << ", ";
+    }
+
+    inOrder(node->right);
 }
 
 void Tree::postOrder(Node* node) const {
+    if (!node){
+        return;
+    }
 
-    
+    postOrder(node->left);
+    postOrder(node->middle);
+    postOrder(node->right);  
+
+    cout << node->small << ", ";
+    if (node->large != ""){
+        cout << node->large << ", ";
+    }
 }
 
 void Tree::reorderTwoKeys(Node* node){
+    if (node->small == "" && node->large != ""){
+        node->small = node->large;
+        node->large = "";
+    }
     if (node->small > node->large){
         const string changeValue = node->small;
         node->small = node->large;
@@ -81,7 +186,23 @@ string Tree::reorderThreeKeys(Node* node, const string& value){
     return keyToMoveUp;
 }
 
-void Tree::split(Node* node, const string& keyToMoveUp, Node* leftNode, Node* rightNode){
+void Tree::split(Node* node, const string& keyToMoveUp){
+    Node* leftNode = new Node(node->small);
+    Node* rightNode = new Node(node->large);
+    //if node is root
+    if (node == root){
+        root = new Node(keyToMoveUp);
+        root->left = leftNode;
+        root->middle = rightNode;
+    }
+    //if node's parent is not full
+    else if (node->parent->large == ""){
+        node->parent->large = keyToMoveUp;
+        node->parent->middle = leftNode;
+        node->parent->right = rightNode;
+    }
+    delete node;
+    /*
     string newKeyToMoveUp = reorderThreeKeys(node, keyToMoveUp);
     Node* smallNode = new Node(node->small); 
     Node* largeNode = new Node(node->large);
@@ -132,4 +253,5 @@ void Tree::split(Node* node, const string& keyToMoveUp, Node* leftNode, Node* ri
             node->right = rightNode;
         }
     }
+    */
 }

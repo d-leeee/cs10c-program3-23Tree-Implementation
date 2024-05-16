@@ -5,11 +5,14 @@ using namespace std;
 
 void printOrders(Tree *tree) {
   cout << "Preorder = ";
-  tree->preOrder( );
+  tree->preOrder();
+  cout << endl;
   cout << "Inorder = ";
-  tree->inOrder( );
+  tree->inOrder();
+  cout << endl;
   cout << "Postorder = ";
-  tree->postOrder( );
+  tree->postOrder();
+  cout << endl;
 }
 
 int menu() {

@@ -9,7 +9,7 @@ class Tree {
 
     public:
         Tree() : root(nullptr) {}
-        ~Tree();
+        //~Tree();
         Tree(const Tree&) = delete;
         Tree& operator=(const Tree&) = delete;
 
@@ -28,5 +28,5 @@ class Tree {
 
         void reorderTwoKeys(Node* node);
         string reorderThreeKeys(Node* node, const string& value);
-        void split(Node* node, const string& keyToMoveUp, Node* leftNode, Node* rightNode);
+        void split(Node* node, const string& keyToMoveUp);
 };
