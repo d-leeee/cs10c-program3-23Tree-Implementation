@@ -15,7 +15,7 @@ class Tree {
 
         void insert(const string& value);
         void remove(const string& value);
-        bool search (const string& value) const;
+        bool search(const string& value) const;
         void preOrder() const { preOrder(root); }
         void inOrder() const { inOrder(root); }
         void postOrder() const { postOrder(root); }
@@ -29,4 +29,5 @@ class Tree {
         void reorderTwoKeys(Node* node);
         string reorderThreeKeys(Node* node, const string& value);
         void split(Node* node, const string& keyToMoveUp);
+        Node* prepareOperation(const string& value) const;
 };
