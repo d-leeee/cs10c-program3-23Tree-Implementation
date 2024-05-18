@@ -33,7 +33,7 @@ class Tree {
         void reorderTwoKeys(Node*);                      // Reorder a node's keys from smallest to largest (used when changing a node's keys)
         string reorderThreeKeys(Node*, const string&);   // When a node is full and needs to insert, reorder the node and return the key to move up to parent (used by insert function)
         Node* prepareOperation(const string&) const;     // Search for the node to access and mutate (used by search, insert, remove functions)
-        void destroyTree(Node* node){                    // Destroy tree recursively
+        void destroyTree(Node* node) {                    // Destroy tree recursively
             
             if (!node) return;
 
