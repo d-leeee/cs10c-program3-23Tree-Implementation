@@ -3,82 +3,98 @@
 
 using namespace std;
 
-// Insert a new value into the tree
-void Tree::insert(const string& value){
+// Insert a new key into the tree
+void Tree::insert(const string& key){
+
     // If empty tree
     if (empty()){
-        root = new Node(value);
+        root = new Node(key);
         return;
     }
 
-    Node* insertPlace = prepareOperation(value); // Node to insert value into
+    Node* insertNode = prepareOperation(key); // Node to insert key into
 
-    // If large key is empty
-    if (insertPlace->large.empty()){
-        insertPlace->large = value;
-        reorderTwoKeys(insertPlace);
+    // CASE 1: If key already exists
+    if (insertNode->small == key || insertNode->large == key){
+        throw runtime_error("key already exists.");
     }
-    // If large key is full
+
+    // CASE 2: If large key is empty
+    else if (insertNode->large.empty()){
+        insertNode->large = key;
+        reorderTwoKeys(insertNode);
+    }
+
+    // CASE 3: If large key is full
     else {
-        string keyToMoveUp = reorderThreeKeys(insertPlace, value); //order small, large, and new keys
-        split(insertPlace, keyToMoveUp);                           //move keyToMoveUp to parent node and split the tree
+        string keyToMoveUp = reorderThreeKeys(insertNode, key);   // Find the key to move up to parent
+        split(insertNode, keyToMoveUp);                           // Move keyToMoveUp to parent node and split the tree
     }
 }
 
-// Remove a value from the tree
-void Tree::remove(const string& value){
-    //return error if value DNE (HAVEN'T IMPLEMENTED YET)
-    if (!search(value)){
-        throw runtime_error("Value does not exist.");
+// Remove a key from the tree
+void Tree::remove(const string& key){
+
+    //return error if key DNE (HAVEN'T IMPLEMENTED YET)
+    if (!search(key)){
+        throw runtime_error("key does not exist.");
     }
 
-    Node* victim = prepareOperation(value); // Node to delete value from
+    Node* victim = prepareOperation(key); // Node to delete key from
 
-    // CASE 1: If value is in leaf node
+    // CASE 1: If key is in leaf node
     if (!victim->left && !victim->middle && !victim->right){
-        // If the value is equal to small key
-        if (victim->small == value) {
-            // If value is single value node
+
+        // If the key is equal to small key
+        if (victim->small == key) {
+
+            // If key is single key node
             if (victim->large.empty()){ 
+
                 // If node is root, update parent pointers
                 if (victim == root){
                     delete root;
                     root = nullptr;
                 }
+
                 // If node is not root, merge
                 else {
                     merge(victim);
                 }
             }
-            // If value is two value node
+
+            // If key is two key node
             else { 
                 victim->small.clear();
                 reorderTwoKeys(victim);
             }
         }
-        // If the value is equal to large key
+
+        // If the key is equal to large key
         else { 
             victim->large.clear();
         }
     }
 
-    // CASE 2: If value is not a leaf node
+    // CASE 2: If key is not a leaf node
     else {
-        // Look for a successor
-        Node* successor; 
 
-        if (victim->small == value){
+        // Look for a successor subtree
+        Node* successor; 
+        if (victim->small == key){
             successor = victim->middle;
         }
         else {
             successor = victim->right;
         }
+
+        // Traverse subtree to find successor node
         while (successor->left){
             successor = successor->left;
         }
 
-        // Replace value by successor value
-        if (victim->small == value){
+        // Replace victim key by successor key
+        if (victim->small == key){
             victim->small = successor->small;
         }
         else {
@@ -86,11 +102,12 @@ void Tree::remove(const string& value){
         }
         reorderTwoKeys(victim);
 
-        // If successor only has one value, merge
+        // If successor only has one key, merge
         if (successor->large.empty()){
             merge(successor);
         }
-        // If successor has two values, remove small key
+
+        // If successor has two keys, remove small key
         else {
             successor->small.clear();
             reorderTwoKeys(successor);
@@ -98,18 +115,21 @@ void Tree::remove(const string& value){
     }
 }
 
-// Search for the existance of a value in the tree
-bool Tree::search(const string& value) const {
+// Search for the existance of a key in the tree
+bool Tree::search(const string& key) const {
+
     throw runtime_error("Haven't implemented search function");
+
     return false;
 }
 
 // Split a node into 2 and move a node to the parent (used by insert function)
 void Tree::split(Node* node, const string& keyToMoveUp){
-    Node* leftNode = new Node(node->small);  // Small node
-    Node* rightNode = new Node(node->large); // Large node
 
-    // If node is root
+    Node* leftNode = new Node(node->small);    // Small node
+    Node* rightNode = new Node(node->large);   // Large node
+
+    // CASE 1: If node is root
     if (node == root){
         root = new Node(keyToMoveUp);
         root->left = leftNode;
@@ -117,29 +137,39 @@ void Tree::split(Node* node, const string& keyToMoveUp){
         leftNode->parent = root;
         rightNode->parent = root;
     }
-    //If node's parent is not full
+
+    // CASE 2: If node's parent is not full
     else if (node->parent->large.empty()){
         node->parent->large = keyToMoveUp;
         node->parent->middle = leftNode;
         node->parent->right = rightNode;
         reorderTwoKeys(node->parent);
     }
+
+    // CASE 3: If node's parent is full
+    else if (!node->parent->large.empty()){
+        throw runtime_error("Haven't implemented recursive insert yet.");
+    }
+
     delete node;
 }
 
-// Merge 2 nodes into 1 by bringing a parent down (used by remove function)
+// Merge 2 nodes into 1 by bringing a parent down to node
 void Tree::merge(Node* node){
+
     Node* parent = node->parent;
 
-    // If node is a left child
+    // CASE 1: If node is a left child
     if (parent->left == node){
-        // If sibling is full, move parent small to node, siblings large to parent
+
+        // If sibling is full, move parent's small key to node, sibling's large to parent
         if (!parent->middle->large.empty()){
             node->small = parent->small;
             parent->small = parent->middle->small;
             parent->middle->small.clear();
             reorderTwoKeys(parent->middle);
         }
+
         // If sibling is not full, merge node with sibling
         else {
             node->small = parent->small;
@@ -150,15 +180,17 @@ void Tree::merge(Node* node){
             delete parent->middle;
         }
     }
-
-    // If node is a middle child
+    
+    // CASE 2: If node is a middle child
     else if (parent->middle == node){
+
         // If sibling is full, move parent small to node, siblings large to parent
         if (!parent->left->large.empty()){
             node->small = parent->small;
             parent->small = parent->left->large;
             parent->left->large.clear();
         }
+
         // If sibling is not full, merge node with sibling
         else {
             parent->left->large = parent->small;
@@ -168,7 +200,7 @@ void Tree::merge(Node* node){
         }
     }
 
-    // If node is a right child (HAVEN'T IMPLEMENTED YET)
+    // CASE 3: If node is a right child (HAVEN'T IMPLEMENTED YET)
     else {
         throw runtime_error("Haven't implemented right child merge.");
     }
@@ -183,100 +215,121 @@ void Tree::merge(Node* node){
 
 // Reorder a node's keys from smallest to largest (used when changing a node's keys)
 void Tree::reorderTwoKeys(Node* node){
+
     // If only small key exists, return
     if (!node->small.empty() && node->large.empty()){
         return;
     }
+
     // If large key exists without small key, reorder
     else if (node->small.empty() && !node->large.empty()){
         node->small = node->large;
         node->large.clear();
     }
+
     // If small key is larger than large key, reorder
     else if (node->small > node->large){
-        const string changeValue = node->small;
+        const string changekey = node->small;
         node->small = node->large;
-        node->large = changeValue;
+        node->large = changekey;
     }
 }
 
 // When a node is full and needs to insert, reorder the node and return the key to move up to parent (used by insert function)
-string Tree::reorderThreeKeys(Node* node, const string& value){
-    string keyToMoveUp = value;
+string Tree::reorderThreeKeys(Node* node, const string& key /* Inserted key */ ){
+
+    string keyToMoveUp = key;
 
     // Small key moves up to parent
-    if (value < node->small){
+    if (key < node->small){
         keyToMoveUp = node->small;
-        node->small = value;
+        node->small = key;
     }
+
     // Large key moves up to parent
-    else if (value > node->large){
+    else if (key > node->large){
         keyToMoveUp = node->large;
-        node->large = value;
+        node->large = key;
     }
-    // If the inserting key is between small and large key, move up inserting key to parent
+
+    // If the inserting key is between small and large key, move up inserted key to parent
     return keyToMoveUp;
 }
 
 // Search for the node to access and mutate (used by search, insert, remove functions)
-Node* Tree::prepareOperation(const string& value) const{
+Node* Tree::prepareOperation(const string& key) const{
+
     Node* curr = root;
 
+    // Traverse the tree to find key
     while (curr){
+
         // Traverse left child
-        if (value < curr->small && curr->left){
+        if (key < curr->small && curr->left){
             curr = curr->left;
         }
+
         // Traverse middle child
-        else if (value > curr->small && (value < curr->large || curr->large.empty()) && curr->middle){
+        else if (key > curr->small && (key < curr->large || curr->large.empty()) && curr->middle){
             curr = curr->middle;
         }
+
         // Traverse right child
-        else if (value > curr->large && curr->right){
+        else if (key > curr->large && curr->right){
             curr = curr->right;
         }
+
         // Node found
         else {
             return curr;
         }
     }
-    throw runtime_error("Value not found.");
+
+    throw runtime_error("key not found.");
 }
 
 // Recursively print preorder
 void Tree::preOrder(Node* node) const {
+
     if (!node) return;
 
     cout << node->small << ", ";
-    preOrder(node->left);
+    preOrder(node->left);     // Traverse left subtree
+
     if (!node->large.empty()){
         cout << node->large << ", ";
     }
-    preOrder(node->middle);
-    preOrder(node->right);
+
+    preOrder(node->middle);   // Traverse middle subtree
+    preOrder(node->right);    // Traverse right subtree
 }
 
 // Recursively print inorder
 void Tree::inOrder(Node* node) const {
+
     if (!node) return;
 
-    inOrder(node->left);
+    inOrder(node->left);     // Traverse left subtree
     cout << node->small << ", ";
-    inOrder(node->middle);
+    inOrder(node->middle);   // Traverse middle subtree
+
     if (!node->large.empty()){
         cout << node->large << ", ";
     }
-    inOrder(node->right);
+
+    inOrder(node->right);    // Traverse right subtree
 }
 
 // Recursively print postorder
 void Tree::postOrder(Node* node) const {
+
     if (!node) return;
 
-    postOrder(node->left);
-    postOrder(node->middle);
+    postOrder(node->left);     // Traverse left subtree
+    postOrder(node->middle);   // Traverse middle subtree
     cout << node->small << ", ";
-    postOrder(node->right);  
+    postOrder(node->right);    // Traverse right subtree
+
     if (!node->large.empty()){
         cout << node->large << ", ";
     }

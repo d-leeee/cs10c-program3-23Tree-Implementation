@@ -9,7 +9,7 @@ class Node {
     friend class Tree;
 
     public:
-        Node(const string& value) : small(value), large(""), left(nullptr), middle(nullptr), right(nullptr), parent(nullptr){}
+        Node(const string& key) : small(key), large(""), left(nullptr), middle(nullptr), right(nullptr), parent(nullptr){}
 
     private:
         string small;
