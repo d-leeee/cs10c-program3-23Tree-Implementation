@@ -35,11 +35,6 @@ void Tree::insert(const string& key){
 // Remove a key from the tree
 void Tree::remove(const string& key){
 
-    //return error if key DNE (HAVEN'T IMPLEMENTED YET)
-    if (!search(key)){
-        throw runtime_error("key does not exist.");
-    }
-
     Node* victim = prepareOperation(key); // Node to delete key from
 
     // CASE 1: If key is in leaf node
