@@ -121,6 +121,7 @@ void Tree::split(Node* node, const string& keyToMoveUp) {
 
     Node* leftNode = new Node(node->small);    // Small node
     Node* rightNode = new Node(node->large);   // Large node
+    Node* parent = node->parent;               // Parent node
 
     // CASE 1: If node is root
     if (node == root) {
@@ -132,15 +133,15 @@ void Tree::split(Node* node, const string& keyToMoveUp) {
     }
 
     // CASE 2: If node's parent is not full
-    else if (node->parent->large.empty()) {
-        node->parent->large = keyToMoveUp;
-        node->parent->middle = leftNode;
-        node->parent->right = rightNode;
-        reorderTwoKeys(node->parent);
+    else if (parent->large.empty()) {
+        parent->large = keyToMoveUp;
+        parent->middle = leftNode;
+        parent->right = rightNode;
+        reorderTwoKeys(parent);
     }
 
     // CASE 3: If node's parent is full
-    else if (!node->parent->large.empty()) {
+    else if (!parent->large.empty()) {
         throw runtime_error("Haven't implemented recursive insert yet.");
     }
 
