@@ -21,13 +21,15 @@ class Tree {
         void postOrder() const { postOrder(root); }
 
     private:
+        void split(Node* node, const string& keyToMoveUp);
+        void merge(Node* node);
+        void reorderTwoKeys(Node* node);
+        string reorderThreeKeys(Node* node, const string& value);
+        Node* prepareOperation(const string& value) const;
+
         //order functions
         void preOrder(Node* node) const;
         void inOrder(Node* node) const;
         void postOrder(Node* node) const;
 
-        void reorderTwoKeys(Node* node);
-        string reorderThreeKeys(Node* node, const string& value);
-        void split(Node* node, const string& keyToMoveUp);
-        Node* prepareOperation(const string& value) const;
 };

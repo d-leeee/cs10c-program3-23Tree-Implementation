@@ -169,6 +169,67 @@ bool Tree::search(const string& value) const {
     return true;
 }
 
+
+void Tree::split(Node* node, const string& keyToMoveUp){
+    Node* leftNode = new Node(node->small);
+    Node* rightNode = new Node(node->large);
+    //if node is root
+    if (node == root){
+        root = new Node(keyToMoveUp);
+        root->left = leftNode;
+        root->middle = rightNode;
+        leftNode->parent = root;
+        rightNode->parent = root;
+        cout << "parent does not exist. Moving " << keyToMoveUp << " to root. Root's left children are " << root->left->small << ", " << root->left->large
+         << " and Root's middle children are " << root->middle->small << ", " << root->middle->large << endl;
+    }
+    //if node's parent is not full
+    else if (node->parent->large.empty()){
+        node->parent->large = keyToMoveUp;
+        node->parent->middle = leftNode;
+        node->parent->right = rightNode;
+        reorderTwoKeys(node->parent);
+        cout << "parent is not full, parent is now " << node->parent->small << ", " << node->parent->large << ". Parent's middle children are "
+        << node->parent->middle->small << ", " << node->parent->middle->large << " and Parent's right children are " << node->parent->right->small << ", " << node->parent->right->large << endl;
+    }
+    delete node;
+}
+
+void Tree::merge(Node* node){
+
+}
+
+void Tree::reorderTwoKeys(Node* node){
+    if (!node->small.empty() && node->large.empty()){
+        return;
+    }
+    else if (node->small.empty() && !node->large.empty()){
+        node->small = node->large;
+        node->large.clear();
+    }
+    else if (node->small > node->large){
+        const string changeValue = node->small;
+        node->small = node->large;
+        node->large = changeValue;
+    }
+}
+
+string Tree::reorderThreeKeys(Node* node, const string& value){
+    string keyToMoveUp = value;
+    if (value < node->small){
+        keyToMoveUp = node->small;
+        node->small = value;
+    }
+    else if (value > node->large){
+        keyToMoveUp = node->large;
+        node->large = value;
+    }
+    else{
+        keyToMoveUp= value;
+    }
+    return keyToMoveUp;
+}
+
 Node* Tree::prepareOperation(const string& value) const{
     Node* curr = root;
     while (curr){
@@ -228,60 +289,4 @@ void Tree::postOrder(Node* node) const {
     if (!node->large.empty()){
         cout << node->large << ", ";
     }
-}
-
-void Tree::reorderTwoKeys(Node* node){
-    if (!node->small.empty() && node->large.empty()){
-        return;
-    }
-    else if (node->small.empty() && !node->large.empty()){
-        node->small = node->large;
-        node->large.clear();
-    }
-    else if (node->small > node->large){
-        const string changeValue = node->small;
-        node->small = node->large;
-        node->large = changeValue;
-    }
-}
-
-string Tree::reorderThreeKeys(Node* node, const string& value){
-    string keyToMoveUp = value;
-    if (value < node->small){
-        keyToMoveUp = node->small;
-        node->small = value;
-    }
-    else if (value > node->large){
-        keyToMoveUp = node->large;
-        node->large = value;
-    }
-    else{
-        keyToMoveUp= value;
-    }
-    return keyToMoveUp;
-}
-
-void Tree::split(Node* node, const string& keyToMoveUp){
-    Node* leftNode = new Node(node->small);
-    Node* rightNode = new Node(node->large);
-    //if node is root
-    if (node == root){
-        root = new Node(keyToMoveUp);
-        root->left = leftNode;
-        root->middle = rightNode;
-        leftNode->parent = root;
-        rightNode->parent = root;
-        cout << "parent does not exist. Moving " << keyToMoveUp << " to root. Root's left children are " << root->left->small << ", " << root->left->large
-         << " and Root's middle children are " << root->middle->small << ", " << root->middle->large << endl;
-    }
-    //if node's parent is not full
-    else if (node->parent->large.empty()){
-        node->parent->large = keyToMoveUp;
-        node->parent->middle = leftNode;
-        node->parent->right = rightNode;
-        reorderTwoKeys(node->parent);
-        cout << "parent is not full, parent is now " << node->parent->small << ", " << node->parent->large << ". Parent's middle children are "
-        << node->parent->middle->small << ", " << node->parent->middle->large << " and Parent's right children are " << node->parent->right->small << ", " << node->parent->right->large << endl;
-    }
-    delete node;
 }
