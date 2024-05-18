@@ -17,8 +17,8 @@ void Tree::insert(const string& value){
         insertPlace->large = value;
         reorderTwoKeys(insertPlace);
     }
+    //if large key is full
     else {
-        //if large key is full
         string keyToMoveUp = reorderThreeKeys(insertPlace, value); //order small, large, and new keys
         split(insertPlace, keyToMoveUp); //move keyToMoveUp to parent node and split the tree
     }
