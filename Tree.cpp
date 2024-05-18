@@ -13,10 +13,10 @@ void Tree::insert(const string& value){
     Node* insertPlace = prepareOperation(value);
 
     //if large key is empty
-    if (insertPlace->large == ""){
+    if (insertPlace->large.empty()){
         insertPlace->large = value;
         reorderTwoKeys(insertPlace);
-        //cout << "empty, inserting " << value << " into " << curr->small << " node." << endl;
+        //cout << "empty, inserting " << value << " into " << insertPlace->small << " node." << endl;
     }
     else {
         //if large key is full
@@ -33,31 +33,61 @@ void Tree::remove(const string& value){
     }
 
     Node* removePlace = prepareOperation(value);
-    //if value is in leaf node
-    if (!removePlace->left){
+    //cout << "The node containing the value to be removed has " << removePlace->small << ", " << removePlace->large << endl;
+
+    //CASE 1: if value is in leaf node
+    if (!removePlace->left && !removePlace->middle && !removePlace->right){
+        //cout << "value is inside a leaf node." << endl;
+        //if the value is equal to small key
         if (removePlace->small == value) {
-            if (removePlace->large == ""){
-                if (removePlace != root) {
-                removePlace->parent->left = nullptr;
+            //cout << "value is equal to small key" << endl;
+            //single value node
+            if (removePlace->large.empty()){ 
+                //cout << "the node does not contain a large key, removing the node" << endl;
+                //if node is not root, update parent pointers
+                if (removePlace != root){
+                    //cout << "node is not a root node" << endl;
+                    if (removePlace->parent->left == removePlace) {
+                        //cout << "node is a left child, removing left child" << endl;
+                        removePlace->parent->left = nullptr;
+                    } 
+                    else if (removePlace->parent->middle == removePlace){
+                        //cout << "node is a middle child, removing middle child" << endl;
+                        removePlace->parent->middle = nullptr;
+                    }
+                    else {
+                        //cout << "node is a right child, removing right child" << endl;
+                        removePlace->parent->right = nullptr;
+                    }
                     delete removePlace;
-                } 
+                }
+                //if node is root, delete root
                 else {
+                    //cout << "node is a root node, deleting root" << endl;
                     delete root;
                     root = nullptr;
                     return;
                 }
             }
-            else {
-                removePlace->small = "";
+            //two value node
+            else { 
+                //cout << "the node contains a large key, keeping the node and removing small key" << endl;
+                removePlace->small.clear();
+                reorderTwoKeys(removePlace);
+                //cout << "the node is now " << removePlace->small << endl;
             }
         }
-        else {
-            removePlace->large = "";
+        //if the value is equal to large key
+        else { 
+            //cout << "value is equal to large key, deleting large key" << endl;
+            removePlace->large.clear();
+            //cout << "node is now " << removePlace->small << endl;
         }
-        reorderTwoKeys(removePlace);
     }
-    //if value is internal node
+
+    //CASE 2: if value is not a leaf node
     else {
+        //cout << "value is not a leaf node, looking for successor" << endl;
         //look for a successor
         Node* successor; 
         if (removePlace->small == value){
@@ -69,65 +99,70 @@ void Tree::remove(const string& value){
         while (successor->left){
             successor = successor->left;
         }
+        //cout << "successor found, " << successor->small << endl;
         //replace value by successor value
         if (removePlace->small == value){
+            //cout << "value is a small key, replacing small key with " << successor->small << endl;
             removePlace->small = successor->small;
         }
         else {
+            //cout << "value is a large key, replacing large key with " << successor->small << endl;
             removePlace->large = successor->small;
         }
         reorderTwoKeys(removePlace);
+        //cout << "the node is now " << removePlace->small << ", " << removePlace->large << endl;
 
         //if successor only has one value, merge
-        if (successor->large == ""){
-            successor->parent->left->large = successor->parent->small;
-            successor->parent->middle = nullptr;
-            root = successor->parent->left;
-            root->parent = nullptr;
+        if (successor->large.empty()){
+            //cout << "successor only has one value, needs to merge" << endl;
+            Node* parent = successor->parent;
+            //cout << "successor's parent is " << parent->small << ", " << parent->large << endl;
+            //if sibling is full, move parent small to successor, siblings large to parent
+            if (!parent->left->large.empty()){
+                /*cout << "sibling is " << parent->left->small << ", " << parent->left->large << endl;
+                cout << "sibling is full, moving parent small key to successor and sibling's large key to parent small" << endl;*/
+                successor->small = parent->small;
+                parent->small = parent->left->large;
+                parent->left->large.clear();
+                /*cout << "successor is now " << successor->small << ", " << successor->large << endl;
+                cout << "sibling is now " << parent->left->small << ", " << parent->left->large << endl;
+                cout << "parent is now " << parent->small << ", " << parent->large << endl;*/
+            }
+            //if sibling is not full, merge successor with sibling
+            else {
+                /*cout << "sibling is " << parent->left->small << ", " << parent->left->large << endl;
+                cout << "sibling is not full, needs to merge successor with sibling" << endl;*/
+                parent->left->large = parent->small;
+                parent->small.clear();
+                /*cout << "sibling is now " << parent->left->small << ", " << parent->left->large << endl;
+                cout << "parent is now " << parent->small << ", " << parent->large << endl;*/
+                if (parent->middle == successor){
+                    //cout << "successor is a middle child, deleting middle child" << endl;
+                    parent->middle = nullptr;
+                }
+                else {
+                    //cout << "successor is a right child, deleting right child" << endl;
+                    parent->right = nullptr;
+                }
+                delete successor;
+            }
+            //if parent is root, set merged node to root
+            if (parent == root && parent->small.empty() && parent->large.empty()){
+                /*cout << "successor parent is root node and is empty, setting new root to merged node" << endl;
+                /cout << "the merged node becoming root is " << parent->left->small << ", " << parent->left->large << endl;*/
+                root = parent->left;
+                root->parent = nullptr;
+                delete parent;
+            }
         }
-    }
-
-    /*
-    //if node is full
-    if (removePlace->large != ""){
-        //if value is small key, delete small and reorder
-        if (value == removePlace->small){
-            removePlace->small = "";
-            reorderTwoKeys(removePlace);
-        }
-        //if value is large key, just remove large key
-        else if (value == removePlace->large){
-            removePlace->large = "";
-        }
-    }
-    //if node is not full
-    else {
-        Node* deleteNode = removePlace;
-        //if value is at root node
-        if (removePlace == root){
-            delete root;
-            root = nullptr;
-            return;
-        }
-        //if value is a left child
-        if (removePlace->parent->left == removePlace){
-            removePlace->parent->left = nullptr;
-        }
-        //if value is a middle child
-        else if (removePlace->parent->middle == removePlace){
-            removePlace->parent->middle = nullptr;
-        }
-        //if value is a right child
+        //if successor has two values, remove small key
         else {
-            removePlace->parent->right = nullptr;
-        }
-
-
-
-        //delete the value
-        delete deleteNode;
+            //cout << "successor has two values, removing small key" << endl;
+            successor->small.clear();
+            reorderTwoKeys(successor);
+            //cout << "successor is now " << successor->small << ", " << successor->large << endl;
+        }      
     }
-    */
 }
 
 bool Tree::search(const string& value) const {
@@ -143,7 +178,7 @@ Node* Tree::prepareOperation(const string& value) const{
             //cout << "traversing left" << endl;
         }
         //middle child
-        else if ((curr->large == "" || value < curr->large) && curr->middle){
+        else if (value > curr->small && value < curr->large && curr->middle){
             curr = curr->middle;
             //cout << "traversing middle" << endl;
         }
@@ -164,7 +199,7 @@ void Tree::preOrder(Node* node) const {
 
     cout << node->small << ", ";
     preOrder(node->left);
-    if (node->large != ""){
+    if (!node->large.empty()){
         cout << node->large << ", ";
     }
     preOrder(node->middle);
@@ -177,7 +212,7 @@ void Tree::inOrder(Node* node) const {
     inOrder(node->left);
     cout << node->small << ", ";
     inOrder(node->middle);
-    if (node->large != ""){
+    if (!node->large.empty()){
         cout << node->large << ", ";
     }
     inOrder(node->right);
@@ -190,28 +225,27 @@ void Tree::postOrder(Node* node) const {
     postOrder(node->middle);
     cout << node->small << ", ";
     postOrder(node->right);  
-    if (node->large != ""){
+    if (!node->large.empty()){
         cout << node->large << ", ";
     }
 }
 
 void Tree::reorderTwoKeys(Node* node){
-    if (node->small == "" && node->large != ""){
+    if (!node->small.empty() && node->large.empty()){
+        return;
+    }
+    else if (node->small.empty() && !node->large.empty()){
         node->small = node->large;
-        node->large = "";
-        //cout << "small is empty, moving large to small" << endl;
+        node->large.clear();
     }
     else if (node->small > node->large){
         const string changeValue = node->small;
-        //cout << "swapping " << node->small << ", " << node->large << " to ";
         node->small = node->large;
         node->large = changeValue;
-        //cout << node->small << ", " << node->large << endl;
     }
 }
 
 string Tree::reorderThreeKeys(Node* node, const string& value){
-    reorderTwoKeys(node);
     string keyToMoveUp = value;
     if (value < node->small){
         keyToMoveUp = node->small;
@@ -220,6 +254,9 @@ string Tree::reorderThreeKeys(Node* node, const string& value){
     else if (value > node->large){
         keyToMoveUp = node->large;
         node->large = value;
+    }
+    else{
+        keyToMoveUp= value;
     }
     return keyToMoveUp;
 }
@@ -238,7 +275,7 @@ void Tree::split(Node* node, const string& keyToMoveUp){
          << " and Root's middle children are " << root->middle->small << ", " << root->middle->large << endl;*/
     }
     //if node's parent is not full
-    else if (node->parent->large == ""){
+    else if (node->parent->large.empty()){
         node->parent->large = keyToMoveUp;
         node->parent->middle = leftNode;
         node->parent->right = rightNode;
@@ -247,56 +284,4 @@ void Tree::split(Node* node, const string& keyToMoveUp){
         << node->parent->middle->small << ", " << node->parent->middle->large << " and Parent's right children are " << node->parent->right->small << ", " << node->parent->right->large << endl;*/
     }
     delete node;
-    /*
-    string newKeyToMoveUp = reorderThreeKeys(node, keyToMoveUp);
-    Node* smallNode = new Node(node->small); 
-    Node* largeNode = new Node(node->large);
-    //if parent doesn't exist
-    if (node == root){
-        root = new Node(newKeyToMoveUp);
-        root->left = smallNode;
-        root->right = largeNode;
-    }
-    //if parent node large key is full
-    else if (node->parent->large != ""){
-        //left split
-        if (leftNode->small < node->small && rightNode->small < node->small){
-            smallNode->left = leftNode;
-            smallNode->middle = rightNode;
-            largeNode->left = node->middle;
-            largeNode->middle = node->right;
-        }
-        //middle split
-        else if (leftNode->small < node->large && rightNode->small < node->large){
-            smallNode->left = node->left;
-            smallNode->middle = leftNode;
-            largeNode->left = rightNode;
-            largeNode->middle = node->right;
-        }
-        //right split
-        else {
-            smallNode->left = node->left;
-            smallNode->middle = node->middle;
-            largeNode->left = leftNode;
-            largeNode->middle = rightNode;
-        }
-        split(node->parent, newKeyToMoveUp, smallNode, largeNode);
-    }
-    //if parent node large key is empty
-    else if (node->parent->large == ""){
-        node->parent->large = newKeyToMoveUp;
-        reorderTwoKeys(node->parent);
-        //left split
-        if (node->small > smallNode->small){
-            node->left = smallNode;
-            node->right = node->middle;
-            node->middle = largeNode;
-        }
-        //right split
-        else {
-            node->middle = leftNode;
-            node->right = rightNode;
-        }
-    }
-    */
 }
