@@ -157,7 +157,7 @@ void Tree::merge(Node* node) {
     if (parent->left == node) {
 
         // If sibling is full, move parent's small key to node, sibling's large to parent
-        if (!parent->middle->large.empty()) 
+        if (!parent->middle->large.empty()) {
             node->small = parent->small;
             parent->small = parent->middle->small;
             parent->middle->small.clear();
